@@ -168,7 +168,10 @@ async def _downstream_task(
     except Exception as e:
         logger.exception("Downstream task error: %s", e)
         try:
-            await websocket.send_json({"type": "error", "message": str(e)})
+            err_msg = str(e)
+            if "1008" in err_msg or "not implemented" in err_msg.lower() or "not supported" in err_msg.lower():
+                err_msg = "Session ended unexpectedly (known Gemini Live API issue with tool use). Please try again."
+            await websocket.send_json({"type": "error", "message": err_msg})
         except Exception:
             pass
 
