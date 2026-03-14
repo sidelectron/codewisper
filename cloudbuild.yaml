@@ -1,0 +1,49 @@
+# Cloud Build config for CodeWhisper: build, push, deploy to Cloud Run
+# Usage: gcloud builds submit --config cloudbuild.yaml
+# Set GOOGLE_API_KEY in Secret Manager or --set-env-vars for Google AI Studio.
+
+substitutions:
+  _REGION: us-central1
+  _REPO: codewhisper-repo
+  _IMAGE: codewhisper
+
+steps:
+  # Step 1: Build the Docker image
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -t
+      - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_IMAGE}
+      - .
+
+  # Step 2: Push the image to Artifact Registry
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_IMAGE}
+
+  # Step 3: Deploy to Cloud Run
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - ${_IMAGE}
+      - --image=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_IMAGE}
+      - --platform=managed
+      - --region=${_REGION}
+      - --allow-unauthenticated
+      - --port=8080
+      - --memory=1Gi
+      - --cpu=1
+      - --timeout=300
+      - --session-affinity
+      - --min-instances=0
+      - --max-instances=3
+    # For Google AI Studio (set GOOGLE_API_KEY in Cloud Run console or use Secret Manager):
+    # --set-env-vars=GOOGLE_GENAI_USE_VERTEXAI=FALSE,GOOGLE_API_KEY=your_key
+    # For Vertex AI:
+    # --set-env-vars=GOOGLE_GENAI_USE_VERTEXAI=TRUE,GOOGLE_CLOUD_PROJECT=${PROJECT_ID},GOOGLE_CLOUD_LOCATION=${_REGION}
+
+images:
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_IMAGE}

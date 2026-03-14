@@ -75,7 +75,7 @@ def resize_frame(image_bytes: bytes, target_size: int = DEFAULT_TARGET_SIZE) -> 
 
 
 def encode_frame_for_gemini(image_bytes: bytes) -> str:
-    """Encode raw JPEG bytes as base64 for gemini_session.send_image().
+    """Encode raw JPEG bytes as base64 for sending as image blob (e.g. to ADK queue).
 
     Args:
         image_bytes: Raw JPEG bytes.

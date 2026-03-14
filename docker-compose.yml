@@ -28,3 +28,27 @@ services:
     command: npm run dev -- --host 0.0.0.0
     depends_on:
       - backend
+
+  extension-build:
+    image: node:20-alpine
+    working_dir: /app
+    volumes:
+      - ./extension:/app
+    command: sh build.sh
+    profiles:
+      - build
+
+  code-watcher:
+    image: python:3.11-slim
+    working_dir: /app
+    volumes:
+      - .:/app
+    command: >
+      sh -c "pip install -q -r watcher_requirements.txt
+      && exec python code_watcher.py
+      --backend-url ws://backend:8000/ws/extension
+      /app"
+    depends_on:
+      - backend
+    profiles:
+      - watcher

@@ -1,0 +1,15 @@
+.env
+*.md
+docs/
+extension/
+click_agent.py
+code_watcher.py
+*_requirements.txt
+run_click_agent.bat
+__pycache__
+*.pyc
+.git
+.gitignore
+node_modules
+frontend/node_modules
+frontend/dist

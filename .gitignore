@@ -34,7 +34,11 @@ docker-compose.override.yml
 # Logs
 *.log
 
-# Plan and phase specs (internal only)
+# Plan and phase specs (internal only — do not push to git)
 PRODUCTION_BUILD_PLAN.md
 PHASE_*
 docs/PHASE_*
+ADK_PHASE_*.md
+*.plan.md
+.cursor/
+plans/
