@@ -1,6 +1,6 @@
 # Deploy to Google Cloud Run on push to main
-# Requires GitHub secrets: GCP_PROJECT_ID, GCP_SA_KEY (full contents of service account JSON key)
-# Must run from the main repo (not a fork) so secrets are available.
+# GCP_PROJECT_ID: set in Variables or Secrets (Settings → Secrets and variables → Actions)
+# GCP_SA_KEY: set in Secrets only (full contents of service account JSON key)
 
 name: Deploy to Cloud Run
 
@@ -19,17 +19,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Check required secrets
+      - name: Check required config
         run: |
-          if [ -z "${{ secrets.GCP_PROJECT_ID }}" ]; then
-            echo "::error::GCP_PROJECT_ID secret is not set. Add it in repo Settings → Secrets and variables → Actions."
+          PROJECT_ID="${{ vars.GCP_PROJECT_ID || secrets.GCP_PROJECT_ID }}"
+          if [ -z "$PROJECT_ID" ]; then
+            echo "::error::GCP_PROJECT_ID is not set. Add it in Settings → Secrets and variables → Actions (Variables tab or Secrets tab)."
             exit 1
           fi
           if [ -z "${{ secrets.GCP_SA_KEY }}" ]; then
-            echo "::error::GCP_SA_KEY secret is not set. Paste the full JSON key in Settings → Secrets and variables → Actions. If this run is from a fork, push from the main repo instead."
+            echo "::error::GCP_SA_KEY must be in Secrets (not Variables). Add it in Settings → Secrets and variables → Actions → Secrets."
             exit 1
           fi
-          echo "Secrets present."
+          echo "Config OK (project: $PROJECT_ID)."
 
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
@@ -39,7 +40,7 @@ jobs:
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
         with:
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          project_id: ${{ vars.GCP_PROJECT_ID || secrets.GCP_PROJECT_ID }}
 
       - name: Build, push, and deploy
-        run: gcloud builds submit --config=cloudbuild.yaml --project=${{ secrets.GCP_PROJECT_ID }}
+        run: gcloud builds submit --config=cloudbuild.yaml --project=${{ vars.GCP_PROJECT_ID || secrets.GCP_PROJECT_ID }}
