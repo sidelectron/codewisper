@@ -18,8 +18,8 @@ _env_path = Path(__file__).resolve().parent.parent / ".env"
 class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
 
-    # ADK / Gemini (model for live streaming; API key via GOOGLE_API_KEY for ADK)
-    agent_model: str = "gemini-2.0-flash-live-001"
+    # ADK / Gemini (model for live streaming; must support bidiGenerateContent)
+    agent_model: str = "gemini-2.5-flash-preview-native-audio-09-2025"
     gemini_api_key: str = ""
     gemini_model: str = "gemini-2.5-flash-native-audio-preview-12-2025"
 
