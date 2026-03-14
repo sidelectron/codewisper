@@ -140,7 +140,10 @@ async def _downstream_task(
 
             # Output transcription (model speech-to-text) — use for summary when end_session
             if event.output_transcription:
-                text = event.output_transcription
+                raw = event.output_transcription
+                text = raw if isinstance(raw, str) else getattr(raw, "text", None) or str(raw)
+                if not text:
+                    text = ""
                 if end_session_requested.is_set() and not summary_sent.is_set():
                     await websocket.send_json({"type": "summary", "text": text})
                     summary_sent.set()
