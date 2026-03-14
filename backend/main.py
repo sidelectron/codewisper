@@ -104,13 +104,15 @@ async def websocket_extension(websocket: WebSocket) -> None:
 
 
 def _build_run_config() -> RunConfig:
-    """Build RunConfig with AUDIO, transcription, BIDI as per plan."""
+    """Build RunConfig for Gemini Live API (BIDI + AUDIO).
+    Avoid 1007 invalid argument: no input_audio_transcription (Vertex only),
+    no session_resumption (problematic with 2.5 native audio). Keep output
+    transcription for frontend text.
+    """
     return RunConfig(
         streaming_mode=StreamingMode.BIDI,
         response_modalities=["AUDIO"],
-        input_audio_transcription=types.AudioTranscriptionConfig(),
         output_audio_transcription=types.AudioTranscriptionConfig(),
-        session_resumption=types.SessionResumptionConfig(),
     )
 
 
