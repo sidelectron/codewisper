@@ -115,8 +115,6 @@ export function useSession() {
   const { isRecording, startRecording, stopRecording } = useAudioInput({
     onAudioChunk: (chunk) => {
       if (isConnectedRef.current && sessionStateRef.current === 'active' && !geminiSpeakingRef.current) {
-        pulseQuestionsRef.current += 1;
-        updatePulseScore();
         sendMessage({ type: 'audio', data: chunk });
       }
     },

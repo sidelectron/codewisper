@@ -89,6 +89,11 @@ async def type_text(text: str) -> str:
 # ---- Session tool ----
 
 async def get_session_info() -> str:
-    """Return current session state: duration, files reviewed, mode, alerts count."""
-    # Placeholder: ADK/session may expose this later. Return a minimal status.
-    return "Session active. Use Flow Modes: Sportscaster (default), Catch-Up (say 'go quiet'), Review (say 'just watch'). Say 'wrap up' for session summary."
+    """Return current session state: code watcher, click agent, flow modes."""
+    ext_status = "connected" if extension_bridge.is_connected else "not connected"
+    click_status = "connected" if await _click_client.check_available() else "not connected"
+    return (
+        f"Session active. Code watcher: {ext_status}. Click agent: {click_status}. "
+        "Flow Modes: Sportscaster (default), Catch-Up (say 'go quiet'), Review (say 'just watch'). "
+        "Say 'wrap up' for session summary."
+    )

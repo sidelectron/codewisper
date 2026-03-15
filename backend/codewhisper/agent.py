@@ -40,6 +40,8 @@ navigator = LlmAgent(
     instruction=NAVIGATOR_INSTRUCTION,
     tools=[
         tools_module.open_file,
+        tools_module.get_file_contents,
+        tools_module.list_project_files,
         tools_module.click_screen,
         tools_module.scroll_screen,
         tools_module.press_keys,
@@ -65,5 +67,9 @@ root_agent = LlmAgent(
     description="Real-time AI coding companion that explains code through voice.",
     instruction=ROOT_INSTRUCTION,
     sub_agents=[code_reviewer, security_scanner, navigator, summarizer],
-    tools=[tools_module.get_session_info],
+    tools=[
+        tools_module.get_session_info,
+        tools_module.get_file_contents,
+        tools_module.list_project_files,
+    ],
 )

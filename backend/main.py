@@ -118,12 +118,15 @@ def _build_run_config() -> RunConfig:
     Avoid 1007 invalid argument: no input_audio_transcription (Vertex only),
     no session_resumption (problematic with 2.5 native audio). Keep output
     transcription for frontend text.
-    Note: response_modalities=["AUDIO"] may trigger Pydantic serializer warning
-    (expected enum); behavior is correct and safe to ignore.
     """
+    try:
+        from google.genai.types import Modality
+        modalities = [Modality.AUDIO]
+    except (ImportError, AttributeError):
+        modalities = ["AUDIO"]
     return RunConfig(
         streaming_mode=StreamingMode.BIDI,
-        response_modalities=["AUDIO"],
+        response_modalities=modalities,
         output_audio_transcription=types.AudioTranscriptionConfig(),
         speech_config=types.SpeechConfig(language_code="en-US"),
     )
@@ -246,6 +249,7 @@ async def websocket_session(websocket: WebSocket) -> None:
 
                     run_config = _build_run_config()
                     queue = LiveRequestQueue()
+                    extension_bridge.register_session_queue(queue)
                     session_started = True
 
                     downstream_task = asyncio.create_task(
@@ -280,6 +284,12 @@ async def websocket_session(websocket: WebSocket) -> None:
                     mode = message.get("mode")
                     if mode and mode in ("sportscaster", "catchup", "review"):
                         await websocket.send_json({"type": "mode", "mode": mode})
+                        if queue and session_started:
+                            mode_names = {"sportscaster": "Sportscaster", "catchup": "Catch-Up", "review": "Review"}
+                            content = types.Content(parts=[types.Part(
+                                text=f"The user just switched to {mode_names.get(mode, mode)} mode via the UI button. Adjust your behavior accordingly."
+                            )])
+                            queue.send_content(content)
 
             elif msg_type == "audio" and queue and session_started:
                 raw = message.get("data", "")
@@ -319,6 +329,7 @@ async def websocket_session(websocket: WebSocket) -> None:
         except Exception:
             pass
     finally:
+        extension_bridge.unregister_session_queue()
         if queue:
             try:
                 queue.close()

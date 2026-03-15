@@ -5,6 +5,8 @@ import logging
 import uuid
 from typing import Any
 
+from google.genai import types
+
 logger = logging.getLogger(__name__)
 
 EXTENSION_TOOL_NAMES = [
@@ -93,11 +95,17 @@ class ExtensionBridge:
         if self._session_queue and message.get("type") in ("file_changed", "file_created"):
             path = message.get("path", "")
             content = message.get("content", "")
-            try:
-                # ADK may use send_content or similar; placeholder for when we wire queue
-                pass
-            except Exception as e:
-                logger.warning("Failed to inject file update: %s", e)
+            if content:
+                try:
+                    truncated = content[:8000]
+                    suffix = f"\n... (truncated, {len(content)} chars total)" if len(content) > 8000 else ""
+                    event = "Created" if message["type"] == "file_created" else "Changed"
+                    text = f"[Code Watcher — File {event}: {path}]\n```\n{truncated}{suffix}\n```"
+                    ctx = types.Content(parts=[types.Part(text=text)])
+                    self._session_queue.send_content(ctx)
+                    logger.info("Injected file update: %s (%d chars)", path, len(content))
+                except Exception as e:
+                    logger.warning("Failed to inject file update: %s", e)
 
     def get_available_tools(self) -> list[str]:
         """Return list of tool names the extension supports when connected."""
