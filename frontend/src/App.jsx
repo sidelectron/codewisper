@@ -1,4 +1,5 @@
 import { useSession } from './hooks/useSession';
+import { useHealth } from './hooks/useHealth';
 import Header from './components/Header';
 import StatusBar from './components/StatusBar';
 import SessionControls from './components/SessionControls';
@@ -23,6 +24,7 @@ function App() {
     isCapturing,
     pulseScore,
   } = useSession();
+  const health = useHealth(sessionState === 'active' || sessionState === 'connecting');
 
   const showSummary = sessionState === 'ended' && summary != null;
 
@@ -46,6 +48,7 @@ function App() {
               sessionState={sessionState}
               startSession={startSession}
               endSession={endSession}
+              health={health}
             />
             <div className="mt-4 flex flex-col items-center gap-3 w-full max-w-md">
               <FlowModeIndicator

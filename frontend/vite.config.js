@@ -25,6 +25,9 @@ export default defineConfig({
           });
         },
       },
+      '/health': {
+        target: process.env.VITE_PROXY_TARGET || 'http://localhost:8000',
+      },
     },
   },
 });

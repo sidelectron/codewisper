@@ -118,6 +118,8 @@ def _build_run_config() -> RunConfig:
     Avoid 1007 invalid argument: no input_audio_transcription (Vertex only),
     no session_resumption (problematic with 2.5 native audio). Keep output
     transcription for frontend text.
+    Note: response_modalities=["AUDIO"] may trigger Pydantic serializer warning
+    (expected enum); behavior is correct and safe to ignore.
     """
     return RunConfig(
         streaming_mode=StreamingMode.BIDI,

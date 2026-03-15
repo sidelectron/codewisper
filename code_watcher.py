@@ -54,6 +54,19 @@ def log_ts(msg: str) -> None:
     print(f"[{t}] {msg}", flush=True)
 
 
+def normalize_ws_url(url: str, path: str) -> str:
+    """Convert https:// to wss://, http:// to ws://, and ensure path is appended."""
+    u = url.strip().rstrip("/")
+    if u.startswith("https://"):
+        base = "wss://" + u[8:]
+    elif u.startswith("http://"):
+        base = "ws://" + u[7:]
+    else:
+        base = u
+    path = path if path.startswith("/") else "/" + path
+    return base.rstrip("/") + path if not base.endswith(path) else base
+
+
 # ---------------------------------------------------------------------------
 # Helpers: path and exclusions
 # ---------------------------------------------------------------------------
@@ -396,7 +409,7 @@ def main() -> int:
         return 1
 
     if args.backend_url:
-        backend_url = args.backend_url
+        backend_url = normalize_ws_url(args.backend_url, "/ws/extension")
     elif args.port is not None:
         backend_url = f"ws://localhost:{args.port}/ws/extension"
     else:

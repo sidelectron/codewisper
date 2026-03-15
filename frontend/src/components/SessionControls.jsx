@@ -2,7 +2,9 @@ function SessionControls({
   sessionState,
   startSession,
   endSession,
+  health,
 }) {
+  const { extensionConnected, clickAgentAvailable, wsBaseUrl } = health || {};
   if (sessionState === 'connecting') {
     return (
       <div className="flex flex-col items-center gap-2">
@@ -40,10 +42,33 @@ function SessionControls({
   }
 
   if (sessionState === 'active') {
+    const showConnectionHelp = (!extensionConnected || !clickAgentAvailable) && wsBaseUrl;
     return (
-      <div className="flex flex-col items-center gap-3">
+      <div className="flex flex-col items-center gap-3 max-w-md">
         <p className="text-sm text-gray-600">Use headphones for the best experience. Speaker audio may cause echo.</p>
         <p className="text-sm text-gray-600">Speak to ask questions — CodeWhisper hears you.</p>
+        {health && (
+          <div className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-700">
+            <p className="font-medium mb-1">Connection status</p>
+            <p>Code watcher: {extensionConnected ? 'Connected' : 'Not connected'}</p>
+            <p>Click agent: {clickAgentAvailable ? 'Connected' : 'Not connected'}</p>
+            {showConnectionHelp && (
+              <div className="mt-2 pt-2 border-t border-gray-200 space-y-1">
+                <p className="font-medium text-gray-600">To enable file access and navigation, run in a terminal:</p>
+                {!extensionConnected && (
+                  <code className="block bg-white px-2 py-1 rounded border border-gray-200 text-[11px] break-all">
+                    python code_watcher.py /path/to/project --backend-url {wsBaseUrl}/ws/extension
+                  </code>
+                )}
+                {!clickAgentAvailable && (
+                  <code className="block bg-white px-2 py-1 rounded border border-gray-200 text-[11px] break-all">
+                    python click_agent.py --backend-url {wsBaseUrl}/ws/click-agent
+                  </code>
+                )}
+              </div>
+            )}
+          </div>
+        )}
         <p className="text-xs text-gray-500">A small control panel opened — keep it beside your IDE to change mode without switching back.</p>
         <button
           type="button"

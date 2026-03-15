@@ -56,6 +56,19 @@ def log_ts(msg: str) -> None:
     print(f"[{t}] {msg}", flush=True)
 
 
+def _normalize_ws_url(url: str, path: str) -> str:
+    """Convert https:// to wss://, http:// to ws://, and ensure path is appended."""
+    u = url.strip().rstrip("/")
+    if u.startswith("https://"):
+        base = "wss://" + u[8:]
+    elif u.startswith("http://"):
+        base = "ws://" + u[7:]
+    else:
+        base = u
+    path = path if path.startswith("/") else "/" + path
+    return base.rstrip("/") + path if not base.endswith(path) else base
+
+
 async def handle_command(action: str, params: dict) -> dict:
     """Execute a command and return the result dict."""
     _rate_limit()
@@ -190,7 +203,7 @@ def main() -> None:
     args = parser.parse_args()
 
     if args.backend_url:
-        backend_url = args.backend_url
+        backend_url = _normalize_ws_url(args.backend_url, "/ws/click-agent")
     elif args.port:
         backend_url = f"ws://localhost:{args.port}/ws/click-agent"
     else:

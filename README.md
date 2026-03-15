@@ -89,13 +89,9 @@ gcloud builds submit --config cloudbuild.yaml
 
 ## Quick Start
 
-### Try it online (no setup)
-
-Visit the Cloud Run URL. Click **Start Session**, share your screen, allow mic.
-
 ### Try it online (full features with local helpers)
 
-To use code watcher and click agent with the hosted app:
+For file access and navigation with the hosted app, run the code watcher and click agent pointing at your Cloud Run URL. **The app shows connection status when the session is active** — if tools are not connected, copy-paste the commands shown.
 
 ```bash
 # 1. Open the app in your browser
@@ -103,14 +99,20 @@ To use code watcher and click agent with the hosted app:
 
 # 2. Connect your project files (new terminal)
 pip install watchdog websockets
-python code_watcher.py /path/to/your/project --backend-url wss://codewhisper-xxxxx.run.app/ws/extension
+python code_watcher.py /path/to/your/project --backend-url https://codewhisper-xxxxx.run.app
 
 # 3. Enable IDE navigation (new terminal, optional)
 pip install pyautogui websockets
-python click_agent.py --backend-url wss://codewhisper-xxxxx.run.app/ws/click-agent
+python click_agent.py --backend-url https://codewhisper-xxxxx.run.app
 
 # 4. Click Start Session in the browser, share your full screen, allow mic
 ```
+
+*You can pass `https://` or `wss://` for `--backend-url`; both work.*
+
+### Try it online (no setup)
+
+Visit the Cloud Run URL. Click **Start Session**, share your screen, allow mic. Works for voice + screen share without local helpers.
 
 ### Run fully local
 
