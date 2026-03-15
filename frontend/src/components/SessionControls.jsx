@@ -42,6 +42,7 @@ function SessionControls({
   if (sessionState === 'active') {
     return (
       <div className="flex flex-col items-center gap-3">
+        <p className="text-sm text-gray-600">Use headphones for the best experience. Speaker audio may cause echo.</p>
         <p className="text-sm text-gray-600">Speak to ask questions — CodeWhisper hears you.</p>
         <p className="text-xs text-gray-500">A small control panel opened — keep it beside your IDE to change mode without switching back.</p>
         <button

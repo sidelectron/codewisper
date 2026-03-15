@@ -123,6 +123,7 @@ def _build_run_config() -> RunConfig:
         streaming_mode=StreamingMode.BIDI,
         response_modalities=["AUDIO"],
         output_audio_transcription=types.AudioTranscriptionConfig(),
+        speech_config=types.SpeechConfig(language_code="en-US"),
     )
 
 
@@ -262,14 +263,13 @@ async def websocket_session(websocket: WebSocket) -> None:
                     logger.info("Session end requested")
                     if queue and session_started:
                         end_session_requested.set()
-                        # Trigger summarizer
                         content = types.Content(
-                            parts=[types.Part(text="The user has clicked End Session. Deliver the session summary now.")]
+                            parts=[types.Part(text="The user is ending the session now. Please give a comprehensive spoken summary of this session covering: what was built, key concepts, any security issues flagged, things to review, and recommended next steps. Be specific about the code from this session.")]
                         )
                         queue.send_content(content)
-                        # Wait briefly for summary to be sent, then close queue if no summary
-                        await asyncio.sleep(2.0)
+                        await asyncio.sleep(20.0)
                         if not summary_sent.is_set():
+                            await websocket.send_json({"type": "summary", "text": "Session summary is being spoken. Check audio output."})
                             await websocket.send_json({"type": "status", "status": "session_ended"})
                             queue.close()
                     break

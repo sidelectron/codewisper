@@ -6,14 +6,17 @@ const BUFFER_SIZE = 4096;
 const INPUT_CHANNELS = 1;
 const OUTPUT_CHANNELS = 1;
 
+const RMS_THRESHOLD = 0.02;
+
 /**
  * Manages microphone capture and PCM audio streaming (16kHz mono, base64).
  * @param {Object} options
  * @param {function(string): void} [options.onAudioChunk] - Called with base64 PCM chunk for each buffer.
+ * @param {React.RefObject<boolean>} [options.geminiSpeakingRef] - When true, only forward mic audio above RMS threshold (echo suppression).
  * @returns {{ isRecording: boolean, startRecording: function, stopRecording: function, error: string|null }}
  */
 export function useAudioInput(options = {}) {
-  const { onAudioChunk } = options;
+  const { onAudioChunk, geminiSpeakingRef } = options;
   const [isRecording, setIsRecording] = useState(false);
   const [error, setError] = useState(null);
 
@@ -22,6 +25,8 @@ export function useAudioInput(options = {}) {
   const processorRef = useRef(null);
   const onAudioChunkRef = useRef(onAudioChunk);
   onAudioChunkRef.current = onAudioChunk;
+  const geminiSpeakingRefRef = useRef(geminiSpeakingRef);
+  geminiSpeakingRefRef.current = geminiSpeakingRef;
 
   const stopRecording = useCallback(() => {
     if (processorRef.current && contextRef.current) {
@@ -64,6 +69,13 @@ export function useAudioInput(options = {}) {
 
       processor.onaudioprocess = (e) => {
         const input = e.inputBuffer.getChannelData(0);
+        const ref = geminiSpeakingRefRef.current;
+        if (ref?.current) {
+          let sum = 0;
+          for (let i = 0; i < input.length; i++) sum += input[i] * input[i];
+          const rms = Math.sqrt(sum / input.length);
+          if (rms < RMS_THRESHOLD) return;
+        }
         const int16 = float32ToInt16(input);
         const base64 = arrayBufferToBase64(int16.buffer);
         if (onAudioChunkRef.current) {

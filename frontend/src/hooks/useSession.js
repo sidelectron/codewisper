@@ -20,6 +20,8 @@ export function useSession() {
   const sessionStateRef = useRef('idle');
   const isConnectedRef = useRef(false);
   const summaryTimeoutRef = useRef(null);
+  const geminiSpeakingRef = useRef(false);
+  const speakingTimeoutRef = useRef(null);
   const { playChunk, stop: stopAudio } = useAudioOutput();
 
   const audioChunksReceivedRef = useRef(0);
@@ -78,14 +80,17 @@ export function useSession() {
         setCurrentMode(mode);
       }
     } else if (type === 'audio' && message.data) {
+      geminiSpeakingRef.current = true;
+      if (speakingTimeoutRef.current) clearTimeout(speakingTimeoutRef.current);
+      speakingTimeoutRef.current = setTimeout(() => {
+        geminiSpeakingRef.current = false;
+      }, 800);
       audioChunksReceivedRef.current += 1;
       pulseExplainedRef.current += 1;
       updatePulseScore();
       if (audioChunksReceivedRef.current <= 3) {
         console.log('[CodeWhisper] Received audio chunk #' + audioChunksReceivedRef.current + ', playing');
       }
-      // Do NOT stop playback on a timer — that was cutting off responses during natural pauses.
-      // Only stop on server "interrupted" (barge-in) or when session ends.
       playChunk(message.data);
     } else if (type === 'pulse') {
       const score = message.score;
@@ -109,13 +114,13 @@ export function useSession() {
   const { isCapturing, startCapture, stopCapture, latestFrame, captureWidth, captureHeight } = useScreenCapture();
   const { isRecording, startRecording, stopRecording } = useAudioInput({
     onAudioChunk: (chunk) => {
-      // Send audio when active (backend only forwards once Gemini is connected)
-      if (isConnectedRef.current && sessionStateRef.current === 'active') {
+      if (isConnectedRef.current && sessionStateRef.current === 'active' && !geminiSpeakingRef.current) {
         pulseQuestionsRef.current += 1;
         updatePulseScore();
         sendMessage({ type: 'audio', data: chunk });
       }
     },
+    geminiSpeakingRef,
   });
 
   // When in active, send latest frame when it changes
