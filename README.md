@@ -2,7 +2,7 @@
 
 **Vibe code without losing the mental model.**
 
-CodeWhisper is a real-time AI coding companion that watches your IDE screen and explains AI-generated code through voice. Built with Google's Agent Development Kit (ADK) and the Gemini Live API as a multi-agent system with specialized agents for code review, security scanning, IDE navigation, and session summarization.
+CodeWhisper is a real-time AI coding companion that watches your IDE screen and explains AI-generated code through voice. Built with Google's Agent Development Kit (ADK) and the Gemini Live API as a multi-agent system with specialized agents for code review, security scanning, IDE navigation, and session summarization is done.
 
 ![Architecture](docs/architecture.svg)
 
