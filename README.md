@@ -52,10 +52,6 @@ The live version uses voice + screen share. For the full experience with direct 
 
 ---
 
-## Demo Video
-
-*Add your YouTube demo video link here after recording (under 4 minutes, PUBLIC).*
-
 ---
 
 ## Tech Stack
